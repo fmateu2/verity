@@ -1,0 +1,1159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VERITY — Multimodal Deception Detection</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="tokens.css" />
+    <link rel="stylesheet" href="cockpit.css" />
+
+    <style>
+      /* ─── Top nav ─── */
+      .topnav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 32px;
+        background: linear-gradient(
+          180deg,
+          rgba(6, 8, 11, 0.88),
+          rgba(6, 8, 11, 0.55) 70%,
+          transparent
+        );
+        backdrop-filter: blur(8px);
+      }
+      .topnav .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: var(--track-caps);
+        text-transform: uppercase;
+        color: var(--fg);
+        font-weight: 600;
+      }
+      .topnav .brand-glyph {
+        width: 22px;
+        height: 22px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--red);
+        color: var(--red);
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1;
+        box-shadow: inset 0 0 12px oklch(0.66 0.22 25 / 0.25);
+      }
+      .topnav .nav-links {
+        display: flex;
+        gap: 28px;
+        align-items: center;
+      }
+      .topnav .nav-links a {
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        letter-spacing: var(--track-caps);
+        text-transform: uppercase;
+        color: var(--fg-dim);
+        text-decoration: none;
+        transition: color 120ms;
+      }
+      .topnav .nav-links a:hover {
+        color: var(--fg);
+      }
+      .topnav .nav-links a.divider {
+        pointer-events: none;
+        color: var(--line-strong);
+      }
+      .topnav .meta-cluster {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: var(--track-caps);
+        text-transform: uppercase;
+        color: var(--fg-faint);
+      }
+
+      /* ─── Hero ─── */
+      .hero {
+        position: relative;
+        min-height: 100vh;
+        padding: 140px 0 80px;
+        overflow: hidden;
+      }
+
+      .hero-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+        background-size: 64px 64px;
+        background-position: -1px -1px;
+        mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 80%);
+        -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 80%);
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 64px;
+      }
+
+      .hero-stamp {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        letter-spacing: var(--track-caps);
+        text-transform: uppercase;
+        color: var(--fg-faint);
+        margin-bottom: 32px;
+      }
+      .hero-stamp .stamp {
+        border: 1px solid var(--red);
+        color: var(--red);
+        padding: 4px 10px;
+        letter-spacing: 0.18em;
+        background: oklch(0.66 0.22 25 / 0.05);
+      }
+
+      .hero-title {
+        font-family: var(--font-disp);
+        font-weight: 500;
+        font-size: clamp(72px, 11vw, 196px);
+        line-height: 0.88;
+        letter-spacing: -0.05em;
+        color: var(--fg);
+        margin: 0;
+        position: relative;
+      }
+      .hero-title .accent {
+        color: var(--red);
+        font-style: normal;
+        font-weight: 500;
+      }
+
+      .hero-sub {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+        gap: 64px;
+        margin-top: 56px;
+        align-items: end;
+      }
+
+      .hero-tag {
+        font-size: clamp(20px, 1.7vw, 26px);
+        line-height: 1.35;
+        letter-spacing: -0.015em;
+        color: var(--fg-mute);
+        max-width: 32ch;
+      }
+      .hero-tag b {
+        color: var(--fg);
+        font-weight: 500;
+      }
+
+      .hero-cta-block {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        align-items: flex-start;
+      }
+      .hero-cta-row {
+        display: flex;
+        gap: 12px;
+      }
+
+      .hero-id-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 32px;
+        margin-top: 96px;
+        border-top: 1px solid var(--line);
+        padding-top: 24px;
+      }
+      .hero-id-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .hero-id-cell .k {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: var(--track-caps);
+        text-transform: uppercase;
+        color: var(--fg-faint);
+      }
+      .hero-id-cell .v {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        color: var(--fg);
+        font-weight: 500;
+      }
+
+      /* ECG waveform behind hero */
+      .hero-ecg {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 320px;
+        transform: translateY(-30%);
+        z-index: 1;
+        opacity: 0.5;
+        pointer-events: none;
+        mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
+        -webkit-mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
+      }
+      .hero-ecg svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      /* ─── Section header ─── */
+      .sec-head {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+        gap: 96px;
+        align-items: end;
+        margin-bottom: 64px;
+        padding-bottom: 32px;
+        border-bottom: 1px solid var(--line);
+      }
+      .sec-head .left {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+      .sec-head .right {
+        padding-bottom: 8px;
+      }
+      .sec-head .sec-id {
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        letter-spacing: var(--track-caps);
+        text-transform: uppercase;
+        color: var(--red);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .sec-head .sec-id::before {
+        content: "";
+        width: 24px;
+        height: 1px;
+        background: var(--red);
+      }
+
+      /* ─── Cockpit container ─── */
+      #cockpit-mount {
+        width: 100%;
+      }
+
+      /* ─── Methodology ─── */
+      .method-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+      }
+      .method-card {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 28px;
+        background: var(--bg-panel);
+        border: 1px solid var(--line);
+        border-radius: var(--r-2);
+        min-height: 320px;
+        position: relative;
+      }
+      .method-card .num {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: var(--track-caps);
+        color: var(--fg-faint);
+      }
+      .method-card .icon {
+        width: 56px;
+        height: 56px;
+        border: 1px solid var(--line-strong);
+        border-radius: var(--r-2);
+        display: grid;
+        place-items: center;
+        background: var(--bg-elevated);
+        margin-bottom: 12px;
+        color: var(--red);
+      }
+      .method-card h3 {
+        font-size: 22px;
+        letter-spacing: -0.015em;
+        color: var(--fg);
+      }
+      .method-card p {
+        font-size: 14px;
+        line-height: 1.55;
+        color: var(--fg-dim);
+      }
+      .method-card .features {
+        margin-top: auto;
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .method-card .features span {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--fg-mute);
+      }
+      .method-card .features span b {
+        color: var(--fg-faint);
+        font-weight: 400;
+        margin-right: 8px;
+      }
+
+      /* ─── Results section ─── */
+      .results-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+      }
+
+      .feat-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-family: var(--font-mono);
+        font-size: 13px;
+      }
+      .feat-table thead th {
+        text-align: left;
+        font-size: 10.5px;
+        letter-spacing: var(--track-caps);
+        text-transform: uppercase;
+        color: var(--fg-faint);
+        font-weight: 500;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      .feat-table tbody td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--line-faint);
+        color: var(--fg);
+      }
+      .feat-table tbody tr:last-child td {
+        border-bottom: none;
+      }
+      .feat-table .imp-bar {
+        display: block;
+        height: 6px;
+        background: var(--red-deep);
+        position: relative;
+      }
+      .feat-table .imp-bar::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        right: auto;
+        width: var(--w, 50%);
+        background: linear-gradient(90deg, var(--red), var(--red-bright));
+        box-shadow: 0 0 12px var(--red-glow);
+      }
+      .feat-table .dir-decep {
+        color: var(--red);
+      }
+      .feat-table .dir-truth {
+        color: var(--green);
+      }
+
+      .model-row {
+        display: grid;
+        grid-template-columns: 1.2fr repeat(2, 1fr) 1.2fr;
+        gap: 24px;
+        padding: 18px 16px;
+        border-bottom: 1px solid var(--line-faint);
+        align-items: center;
+      }
+      .model-row:last-child {
+        border-bottom: none;
+      }
+      .model-row .name {
+        font-family: var(--font-sans);
+        font-size: 15px;
+        color: var(--fg);
+        font-weight: 500;
+      }
+      .model-row .metric {
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
+        font-size: 14px;
+        color: var(--fg-mute);
+      }
+      .model-row .metric b {
+        color: var(--fg);
+        font-weight: 500;
+        margin-right: 6px;
+      }
+      .model-row .bar {
+        height: 4px;
+        background: var(--line);
+        position: relative;
+      }
+      .model-row .bar::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        right: 0;
+        width: var(--w, 100%);
+        background: var(--green);
+        box-shadow: 0 0 8px var(--green-glow);
+      }
+
+      /* ─── Team / Footer ─── */
+      .team-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+      }
+      .team-card {
+        padding: 32px;
+        background: var(--bg-panel);
+        border: 1px solid var(--line);
+        border-radius: var(--r-2);
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .team-card .avatar {
+        width: 64px;
+        height: 64px;
+        background:
+          repeating-linear-gradient(45deg, var(--line-strong) 0 2px, transparent 2px 8px),
+          var(--bg-elevated);
+        border: 1px solid var(--line-strong);
+        border-radius: var(--r-2);
+        display: grid;
+        place-items: center;
+        font-family: var(--font-mono);
+        font-size: 18px;
+        color: var(--fg-mute);
+        font-weight: 600;
+      }
+      .team-card .name {
+        font-size: 22px;
+        letter-spacing: -0.015em;
+      }
+      .team-card .role {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: var(--track-caps);
+        text-transform: uppercase;
+        color: var(--fg-faint);
+      }
+      .team-card .quote {
+        font-size: 15px;
+        line-height: 1.55;
+        color: var(--fg-mute);
+      }
+
+      .refs {
+        margin-top: 64px;
+        padding-top: 32px;
+        border-top: 1px solid var(--line);
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 64px;
+      }
+      .refs ol {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .refs ol li {
+        font-family: var(--font-mono);
+        font-size: 12.5px;
+        color: var(--fg-mute);
+        line-height: 1.6;
+        padding-left: 32px;
+        position: relative;
+      }
+      .refs ol li::before {
+        content: counter(refs, decimal-leading-zero);
+        counter-increment: refs;
+        position: absolute;
+        left: 0;
+        color: var(--fg-faint);
+      }
+      .refs ol {
+        counter-reset: refs;
+      }
+
+      footer {
+        padding: 32px 0 48px;
+        border-top: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        letter-spacing: var(--track-caps);
+        text-transform: uppercase;
+        color: var(--fg-faint);
+      }
+
+      /* ─── Misc utility ─── */
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .spacer {
+        flex: 1;
+      }
+      .divider-v {
+        width: 1px;
+        height: 14px;
+        background: var(--line-strong);
+      }
+
+      /* Responsive */
+      @media (max-width: 900px) {
+        .hero-sub {
+          grid-template-columns: 1fr;
+          gap: 32px;
+        }
+        .hero-id-strip {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .method-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .results-grid {
+          grid-template-columns: 1fr;
+        }
+        .team-row {
+          grid-template-columns: 1fr;
+        }
+        .topnav .nav-links {
+          display: none;
+        }
+        .topnav .meta-cluster {
+          display: none;
+        }
+        .container {
+          padding: 0 24px;
+        }
+        section {
+          padding: 80px 0;
+        }
+        .refs {
+          grid-template-columns: 1fr;
+          gap: 24px;
+        }
+        .sec-head {
+          grid-template-columns: 1fr;
+          gap: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ─── Top nav ───────────────────────────────────────────── -->
+    <nav class="topnav">
+      <div class="brand">
+        <div class="brand-glyph">V</div>
+        <span>VERITY <span style="color: var(--fg-faint)">/ V1.0</span></span>
+      </div>
+      <div class="nav-links">
+        <a href="#demo">Live Session</a>
+        <span class="divider">/</span>
+        <a href="#method">Methodology</a>
+        <span class="divider">/</span>
+        <a href="#results">Validation</a>
+        <span class="divider">/</span>
+        <a href="#team">Authors</a>
+      </div>
+      <div class="meta-cluster">
+        <span><span class="dot live" style="margin-right: 6px"></span> System online</span>
+        <span class="divider-v"></span>
+        <span id="clock">— : — UTC</span>
+      </div>
+    </nav>
+
+    <!-- ─── Hero ──────────────────────────────────────────────── -->
+    <section class="hero" data-screen-label="01 Hero">
+      <div class="hero-grid"></div>
+
+      <!-- ambient ECG waveform -->
+      <div class="hero-ecg">
+        <svg viewBox="0 0 1600 320" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="ecg-grad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="oklch(0.66 0.22 25)" stop-opacity="0" />
+              <stop offset="50%" stop-color="oklch(0.66 0.22 25)" stop-opacity="1" />
+              <stop offset="100%" stop-color="oklch(0.66 0.22 25)" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <path
+            id="ecg-path"
+            d="M0 160
+               L120 160 L130 160 L140 158 L160 162 L180 160
+               L240 160 L250 100 L260 220 L270 60 L280 200 L290 160
+               L380 160 L390 160 L400 156 L420 164 L440 160
+               L520 160 L530 110 L540 210 L550 70 L560 190 L570 160
+               L680 160 L690 160 L700 158 L720 162 L740 160
+               L820 160 L830 110 L840 210 L850 60 L860 200 L870 160
+               L980 160 L990 160 L1000 156 L1020 164 L1040 160
+               L1120 160 L1130 120 L1140 200 L1150 80 L1160 200 L1170 160
+               L1280 160 L1290 160 L1300 158 L1320 162 L1340 160
+               L1420 160 L1430 110 L1440 210 L1450 70 L1460 200 L1470 160
+               L1600 160"
+            stroke="url(#ecg-grad)"
+            stroke-width="1.5"
+            fill="none"
+            style="filter: drop-shadow(0 0 6px var(--red-glow))"
+          />
+          <!-- baseline tick marks -->
+          <g stroke="var(--line)" stroke-width="1">
+            <line x1="0" y1="80" x2="1600" y2="80" stroke-dasharray="2 8" opacity="0.5" />
+            <line x1="0" y1="240" x2="1600" y2="240" stroke-dasharray="2 8" opacity="0.5" />
+          </g>
+        </svg>
+      </div>
+
+      <div class="container hero-content">
+        <div>
+          <div class="hero-stamp">
+            <span class="stamp">RESTRICTED — INTERNAL USE</span>
+            <span>SERIAL NO. <span style="color: var(--fg-mute)">V1·0427·BCN</span></span>
+            <span>BUILD <span style="color: var(--fg-mute)">2026.05.18</span></span>
+          </div>
+
+          <h1 class="hero-title">
+            Detect <em class="accent">the&nbsp;truth</em><br />
+            in every signal.
+          </h1>
+
+          <div class="hero-sub">
+            <p class="hero-tag">
+              <b>VERITY</b> fuses linguistic, vocal, cardiac and micro-facial cues into a single
+              credibility score &mdash; analyzing what a subject says and how their body reacts,
+              simultaneously, in real time.
+            </p>
+
+            <div class="hero-cta-block">
+              <span class="label-mono">→ Begin diagnostic session</span>
+              <div class="hero-cta-row">
+                <a href="#demo" class="btn primary">
+                  <span
+                    class="dot live"
+                    style="
+                      background: #fff;
+                      box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+                      animation: none;
+                    "
+                  ></span>
+                  Initiate Session
+                </a>
+                <a href="#method" class="btn ghost">Methodology</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-id-strip">
+            <div class="hero-id-cell">
+              <span class="k">Modalities</span
+              ><span class="v">04 / Text · Voice · Face · Cardio</span>
+            </div>
+            <div class="hero-id-cell">
+              <span class="k">Feature set</span><span class="v">23 dimensions</span>
+            </div>
+            <div class="hero-id-cell">
+              <span class="k">Classifier</span><span class="v">RF 200 + Rule recalibration</span>
+            </div>
+            <div class="hero-id-cell">
+              <span class="k">Reference</span
+              ><span class="v">Ott 2013 · Vrij 2008 · Ekman FACS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Cockpit / Live demo ───────────────────────────────── -->
+    <section
+      id="demo"
+      style="padding-top: 80px; padding-bottom: 80px"
+      data-screen-label="02 Live Cockpit"
+    >
+      <div class="container-wide">
+        <div class="sec-head">
+          <div class="left">
+            <span class="sec-id">02 / Live Cockpit</span>
+            <h2 class="h-section">Interrogation in progress.</h2>
+          </div>
+          <div class="right">
+            <p class="lead">
+              A 3-turn session. The subject reads a scenario, answers aloud, and VERITY
+              simultaneously analyzes their words, voice, face and pulse &mdash; producing a
+              credibility verdict for each turn and the session as a whole.
+            </p>
+          </div>
+        </div>
+
+        <div id="cockpit-mount"></div>
+      </div>
+    </section>
+
+    <!-- ─── Methodology ───────────────────────────────────────── -->
+    <section id="method" data-screen-label="03 Methodology">
+      <div class="container">
+        <div class="sec-head">
+          <div class="left">
+            <span class="sec-id">03 / Methodology</span>
+            <h2 class="h-section">Four streams.<br />One verdict.</h2>
+          </div>
+          <div class="right">
+            <p class="lead">
+              No single signal is sufficient. Deception leaks across modalities &mdash; a hedge in
+              speech, a brow-tightening, an elevated pulse, a hesitation. VERITY captures all four
+              and lets the model weigh them against each other.
+            </p>
+          </div>
+        </div>
+
+        <div class="method-grid">
+          <div class="method-card brackets">
+            <span class="bk-tr"></span><span class="bk-bl"></span>
+            <span class="num">M-01</span>
+            <div class="icon">
+              <!-- Text/linguistic glyph -->
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M4 6h16M4 12h10M4 18h16" />
+              </svg>
+            </div>
+            <h3>Linguistic.</h3>
+            <p>
+              Hedging, denial, distancing language, repetition, sentence specificity, sentiment
+              balance. 15 features derived from the transcript on every utterance.
+            </p>
+            <div class="features">
+              <span><b>15</b> text features</span>
+              <span><b>·</b> hedge / denial / distancing ratios</span>
+              <span><b>·</b> Ott et al. 2013 lexicon</span>
+            </div>
+          </div>
+
+          <div class="method-card brackets">
+            <span class="bk-tr"></span><span class="bk-bl"></span>
+            <span class="num">M-02</span>
+            <div class="icon">
+              <!-- Voice glyph -->
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M12 4v16M7 8v8M17 8v8M3 11v2M21 11v2" />
+              </svg>
+            </div>
+            <h3>Vocal.</h3>
+            <p>
+              Web Audio captures cadence, pause duration, speech rate, and energy envelope. The Web
+              Speech API transcribes in real time and feeds the linguistic stream.
+            </p>
+            <div class="features">
+              <span><b>·</b> cadence &amp; pause structure</span>
+              <span><b>·</b> energy envelope (RMS)</span>
+              <span><b>·</b> live speech-to-text</span>
+            </div>
+          </div>
+
+          <div class="method-card brackets">
+            <span class="bk-tr"></span><span class="bk-bl"></span>
+            <span class="num">M-03</span>
+            <div class="icon">
+              <!-- Face glyph -->
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <circle cx="12" cy="12" r="8" />
+                <circle cx="9" cy="10" r="0.8" fill="currentColor" />
+                <circle cx="15" cy="10" r="0.8" fill="currentColor" />
+                <path d="M9 15c1 1 2 1.4 3 1.4s2-.4 3-1.4" />
+              </svg>
+            </div>
+            <h3>Micro-facial.</h3>
+            <p>
+              MediaPipe FaceLandmarker reads 478 points at 30Hz. From these we estimate 4 of Ekman's
+              Action Units &mdash; AU1, AU4, AU7, AU12 &mdash; plus blink rate.
+            </p>
+            <div class="features">
+              <span><b>·</b> AU1 / AU4 / AU7 / AU12</span>
+              <span><b>·</b> blink rate per minute</span>
+              <span><b>·</b> Ekman FACS reference</span>
+            </div>
+          </div>
+
+          <div class="method-card brackets">
+            <span class="bk-tr"></span><span class="bk-bl"></span>
+            <span class="num">M-04</span>
+            <div class="icon">
+              <!-- Cardio glyph -->
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M3 12h4l2-6 4 12 2-6h6" />
+              </svg>
+            </div>
+            <h3>Cardiac.</h3>
+            <p>
+              Remote photoplethysmography (rPPG) extracts the green-channel pulse from a forehead
+              ROI. We derive heart rate and HRV without a single sensor on the subject.
+            </p>
+            <div class="features">
+              <span><b>·</b> HR mean (bpm)</span>
+              <span><b>·</b> HRV (ms)</span>
+              <span><b>·</b> contactless · webcam only</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Validation / Results ──────────────────────────────── -->
+    <section id="results" data-screen-label="04 Validation">
+      <div class="container">
+        <div class="sec-head">
+          <div class="left">
+            <span class="sec-id">04 / Validation</span>
+            <h2 class="h-section">The body talks louder<br />than the mouth.</h2>
+          </div>
+          <div class="right">
+            <p class="lead">
+              Across 150 samples (75 truthful / 75 deceptive) the Random Forest places its
+              confidence overwhelmingly on physiological cues. The top four contributing features
+              are all body signals &mdash; validating the multimodal hypothesis.
+            </p>
+          </div>
+        </div>
+
+        <div class="results-grid">
+          <!-- Feature importance -->
+          <div class="panel brackets">
+            <span class="bk-tr"></span><span class="bk-bl"></span>
+            <div class="panel-head">
+              <span class="panel-title">Feature Importance · Top 8</span>
+              <span class="label-mono-sm">RF 200 / N=150</span>
+            </div>
+            <div class="panel-body" style="padding: 0">
+              <table class="feat-table">
+                <thead>
+                  <tr>
+                    <th style="width: 40%">Feature</th>
+                    <th style="width: 40%">Importance</th>
+                    <th style="width: 20%; text-align: right">Direction</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>au7_lid_tighten</td>
+                    <td><span class="imp-bar" style="--w: 100%"></span></td>
+                    <td style="text-align: right" class="dir-decep">→ DECEP · 0.217</td>
+                  </tr>
+                  <tr>
+                    <td>au4_brow_lower</td>
+                    <td><span class="imp-bar" style="--w: 69%"></span></td>
+                    <td style="text-align: right" class="dir-decep">→ DECEP · 0.150</td>
+                  </tr>
+                  <tr>
+                    <td>hr_mean</td>
+                    <td><span class="imp-bar" style="--w: 51%"></span></td>
+                    <td style="text-align: right" class="dir-decep">→ DECEP · 0.111</td>
+                  </tr>
+                  <tr>
+                    <td>hrv</td>
+                    <td><span class="imp-bar" style="--w: 44%"></span></td>
+                    <td style="text-align: right" class="dir-truth">→ TRUTH · 0.096</td>
+                  </tr>
+                  <tr>
+                    <td>n_exclamations</td>
+                    <td><span class="imp-bar" style="--w: 41%"></span></td>
+                    <td style="text-align: right" class="dir-decep">→ DECEP · 0.089</td>
+                  </tr>
+                  <tr>
+                    <td>au12_lip_corner</td>
+                    <td><span class="imp-bar" style="--w: 36%"></span></td>
+                    <td style="text-align: right" class="dir-truth">→ TRUTH · 0.078</td>
+                  </tr>
+                  <tr>
+                    <td>specificity_score</td>
+                    <td><span class="imp-bar" style="--w: 30%"></span></td>
+                    <td style="text-align: right" class="dir-truth">→ TRUTH · 0.065</td>
+                  </tr>
+                  <tr>
+                    <td>blink_rate</td>
+                    <td><span class="imp-bar" style="--w: 26%"></span></td>
+                    <td style="text-align: right" class="dir-decep">→ DECEP · 0.057</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Model comparison + meta -->
+          <div style="display: flex; flex-direction: column; gap: 24px">
+            <div class="panel brackets">
+              <span class="bk-tr"></span><span class="bk-bl"></span>
+              <div class="panel-head">
+                <span class="panel-title">Classifier Performance · 5-fold CV</span>
+                <span class="label-mono-sm">Stratified · seed 42</span>
+              </div>
+              <div class="panel-body" style="padding: 8px 4px">
+                <div class="model-row">
+                  <div class="name">
+                    Random Forest
+                    <span
+                      style="color: var(--fg-faint); font-family: var(--font-mono); font-size: 11px"
+                      >· 200 trees</span
+                    >
+                  </div>
+                  <div class="metric"><b>1.00</b>CV-Acc</div>
+                  <div class="metric"><b>1.00</b>ROC-AUC</div>
+                  <div class="bar" style="--w: 100%"></div>
+                </div>
+                <div class="model-row">
+                  <div class="name">
+                    Logistic Regression
+                    <span
+                      style="color: var(--fg-faint); font-family: var(--font-mono); font-size: 11px"
+                      >· baseline</span
+                    >
+                  </div>
+                  <div class="metric"><b>1.00</b>CV-Acc</div>
+                  <div class="metric"><b>1.00</b>ROC-AUC</div>
+                  <div class="bar" style="--w: 100%"></div>
+                </div>
+                <div class="model-row">
+                  <div class="name">
+                    SVM
+                    <span
+                      style="color: var(--fg-faint); font-family: var(--font-mono); font-size: 11px"
+                      >· RBF kernel</span
+                    >
+                  </div>
+                  <div class="metric"><b>1.00</b>CV-Acc</div>
+                  <div class="metric"><b>1.00</b>ROC-AUC</div>
+                  <div class="bar" style="--w: 100%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel brackets" style="padding: 0">
+              <span class="bk-tr"></span><span class="bk-bl"></span>
+              <div class="panel-head">
+                <span class="panel-title">Disclosure · Known limits</span>
+                <span class="label-mono-sm pill amber" style="border: none; padding: 0"
+                  >V1 caveat</span
+                >
+              </div>
+              <div
+                class="panel-body"
+                style="font-size: 14px; line-height: 1.6; color: var(--fg-mute)"
+              >
+                <p style="margin-bottom: 12px">
+                  100&percnt; accuracy is an artifact of clean, well-separated synthetic data. In V1
+                  the physiological features were generated against published distributions from
+                  polygraph and FACS literature, not measured.
+                </p>
+                <p>
+                  The V2 roadmap collects real interrogation data with measured sensor input;
+                  expected performance drops to a realistic
+                  <span class="mono" style="color: var(--fg)">~72&ndash;80&percnt;</span> text-only,
+                  <span class="mono" style="color: var(--fg)">~85&ndash;91&percnt;</span>
+                  multimodal, consistent with current deception-detection literature.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Team ──────────────────────────────────────────────── -->
+    <section id="team" data-screen-label="05 Authors">
+      <div class="container">
+        <div class="sec-head">
+          <div class="left">
+            <span class="sec-id">05 / Authors</span>
+            <h2 class="h-section">Built by two.</h2>
+          </div>
+          <div class="right">
+            <p class="lead">
+              A semester-long project for <b style="color: var(--fg)">AI023 Machine Learning</b>
+              at La Salle BCN. The system, the model, the dataset, and the instrument you are
+              looking at &mdash; everything was built from first principles.
+            </p>
+          </div>
+        </div>
+
+        <div class="team-row">
+          <div class="team-card brackets">
+            <span class="bk-tr"></span><span class="bk-bl"></span>
+            <div class="row" style="justify-content: space-between">
+              <div class="avatar">JP</div>
+              <span class="pill cyan"
+                ><span class="dot" style="background: var(--cyan)"></span>Author 01</span
+              >
+            </div>
+            <div>
+              <div class="role">Engineer · Author</div>
+              <div class="name">Jan Porcar</div>
+            </div>
+            <p class="quote">
+              Pipeline architecture, feature engineering and the rule-based recalibration layer that
+              keeps short interrogation responses from clustering at the model's mean confidence.
+            </p>
+          </div>
+
+          <div class="team-card brackets">
+            <span class="bk-tr"></span><span class="bk-bl"></span>
+            <div class="row" style="justify-content: space-between">
+              <div class="avatar">FM</div>
+              <span class="pill cyan"
+                ><span class="dot" style="background: var(--cyan)"></span>Author 02</span
+              >
+            </div>
+            <div>
+              <div class="role">Engineer · Author</div>
+              <div class="name">Francesc Mateu</div>
+            </div>
+            <p class="quote">
+              Dataset curation, synthetic physiological calibration to FACS and polygraph
+              distributions, and the interactive interrogation engine with adaptive follow-ups.
+            </p>
+          </div>
+        </div>
+
+        <div class="refs">
+          <div>
+            <span class="label-mono">References</span>
+            <p class="body-text" style="margin-top: 12px; font-size: 13.5px">
+              Source literature anchoring every feature and threshold in the VERITY pipeline.
+            </p>
+          </div>
+          <ol>
+            <li>
+              Ott, M., Choi, Y., Cardie, C., &amp; Hancock, J. T. (2013).
+              <i>Negative Deceptive Opinion Spam</i>. ACL.
+            </li>
+            <li>
+              Vrij, A. (2008). <i>Detecting Lies and Deceit: Pitfalls and Opportunities</i>. Wiley.
+            </li>
+            <li>
+              Ekman, P., &amp; Friesen, W. V. (1978). <i>Facial Action Coding System</i>. Consulting
+              Psychologists Press.
+            </li>
+            <li>
+              Lykken, D. T. (1998).
+              <i>A Tremor in the Blood: Uses and Abuses of the Lie Detector</i>. Plenum Press.
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div
+        class="container"
+        style="display: flex; justify-content: space-between; align-items: center; width: 100%"
+      >
+        <span>VERITY V1.0 &nbsp;·&nbsp; AI023 La Salle BCN &nbsp;·&nbsp; May 2026</span>
+        <span>© Jan Porcar &amp; Francesc Mateu</span>
+      </div>
+    </footer>
+
+    <!-- ─── React + Babel for cockpit ─────────────────────────── -->
+    <script
+      src="https://unpkg.com/react@18.3.1/umd/react.development.js"
+      integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"
+      integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"
+      integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Signal processing modules + data + cockpit UI -->
+    <script src="scenarios.js"></script>
+    <script type="text/babel" src="signals.jsx"></script>
+    <script type="text/babel" src="cockpit.jsx"></script>
+    <script type="text/babel" src="app.jsx"></script>
+
+    <!-- Clock + smooth anchor scroll -->
+    <script>
+      function updateClock() {
+        const d = new Date();
+        const hh = d.getUTCHours().toString().padStart(2, "0");
+        const mm = d.getUTCMinutes().toString().padStart(2, "0");
+        const ss = d.getUTCSeconds().toString().padStart(2, "0");
+        const el = document.getElementById("clock");
+        if (el) el.textContent = `${hh}:${mm}:${ss} UTC`;
+      }
+      updateClock();
+      setInterval(updateClock, 1000);
+    </script>
+  </body>
+</html>
